@@ -99,19 +99,15 @@ def nn_sgd_step(nn, W_grads, b_grads, alpha, batch_size):
     nn.add_weights_to_layers(W_steps, b_steps)
 
 
-def nn_sgd(X_tr, y_tr, X_te, y_te, layers=None, alpha=0.1, mb_num=0, max_epochs=250, data_set=''):
+def nn_sgd(X_tr, y_tr, X_te, y_te, hidden_layers_sizes=None, alpha=0.1, mb_num=0, max_epochs=250, data_set=''):
     if not mb_num:
         mb_num = 1
 
     n, m = X_tr.shape
     l = y_tr.shape[1]
 
-    if not layers:
-        layers = [n]
-
-    layers_num = len(layers)
-
-    nn = Net(m, l, layers)
+    nn = Net(n, m, l, hidden_layers_sizes)
+    hidden_layers_num = nn.hidden_layers_num
 
     convergence_results = np.zeros((max_epochs, FIELDS_NUM))
     success_rate_results = np.zeros((max_epochs, FIELDS_NUM))
@@ -144,12 +140,12 @@ def nn_sgd(X_tr, y_tr, X_te, y_te, layers=None, alpha=0.1, mb_num=0, max_epochs=
         old_W = np.copy(W)
 
     plot_results(convergence_results[:max_epochs], max_epochs,
-                 title='%s F(W)\n#Layers = %s' % (data_set, layers_num))
+                 title='%s F(W)\n#Hidden Layers = %s' % (data_set, hidden_layers_num))
     plot_results(success_rate_results[:max_epochs], max_epochs,
-                 title='%s Success Rate\n#Layers = %s' % (data_set, layers_num))
+                 title='%s Success Rate\n#Hidden Layers = %s' % (data_set, hidden_layers_num))
 
     final_success_rate = success_rate_results[max_epochs-1, RESULTS_FIELDS['Test']]
-    print('Dataset = %s, Layers = %s, success_rate = %s' % (data_set, layers_num, final_success_rate))
+    print('Dataset = %s, Hidden Layers = %s, success_rate = %s' % (data_set, hidden_layers_num, final_success_rate))
 
     return W
 

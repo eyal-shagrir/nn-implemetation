@@ -42,9 +42,9 @@ def task7():
         n = X_tr.shape[0]
         layers_nums = params['layers_nums']
         for layers_num in layers_nums:
-            layers = [n + 5 * i for i in range(layers_num)]
+            layers = [n + 5 * i for i in range(1, layers_num)]
             _ = nn_sgd(X_tr, y_tr, X_te, y_te,
-                       layers=layers,
+                       hidden_layers_sizes=layers,
                        alpha=params['alpha'],
                        mb_num=params['mb_num'],
                        max_epochs=200,
@@ -52,9 +52,9 @@ def task7():
 
 
 def main():
-    task1()  # loss function gradient tests
-    task3()  # minimizing loss function by SGD
-    task4()  # activation function jacobian tests
+    # task1()  # loss function gradient tests
+    # task3()  # minimizing loss function by SGD
+    # task4()  # activation function jacobian tests
     task6()  # NN gradient tests
     task7()  # minimizing loss function by SGD with NN
 

@@ -65,7 +65,7 @@ def nn_gradient_tests(m=100, n=30, l=5, num_of_tests=10):
 
         X, y, _, _ = get_random_params(m, n, l)
 
-        nn = Net(m, l, [n, n+1, n+2])
+        nn = Net(n, m, l, [n+1, n+2])
 
         Xs = nn.forward_pass(X)
         W, b = nn.get_output_layer_weights()
