@@ -106,7 +106,7 @@ def nn_sgd(X_tr, y_tr, X_te, y_te, hidden_layers_sizes=None, alpha=0.1, mb_num=0
     n, m = X_tr.shape
     l = y_tr.shape[1]
 
-    nn = Net(n, m, l, hidden_layers_sizes)
+    nn = Net(n, l, hidden_layers_sizes)
     hidden_layers_num = nn.hidden_layers_num
 
     convergence_results = np.zeros((max_epochs, FIELDS_NUM))

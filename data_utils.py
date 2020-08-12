@@ -43,3 +43,10 @@ def shuffle_data(X, y):
     new_X = X[np.arange(n), random_indices].T
     new_y = y[random_indices, np.arange(l)]
     return new_X, new_y
+
+
+def get_mini_batches(X, y, mb_num):
+    X, y = shuffle_data(X, y)
+    mbs = np.array_split(X, mb_num, axis=1)
+    mbs_labels = np.array_split(y, mb_num, axis=0)
+    return mbs, mbs_labels

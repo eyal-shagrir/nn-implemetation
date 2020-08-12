@@ -1,6 +1,19 @@
 from loss_function import *
 from .activation_function import *
+from data_utils import get_mini_batches
+from classification_utils import *
 import numpy as np
+from matplotlib import pyplot as plt
+
+STOP_EPSILON = 1e-5
+
+
+def plot_results(results, iterations, title=''):
+    plt.semilogy((range(iterations)), results[:iterations])
+    plt.xlabel('epochs')
+    plt.title(title)
+    plt.show()
+
 
 """
 n = the dimension of the original data
@@ -47,17 +60,15 @@ As for dimensions:
 
 class Net:
 
-    def __init__(self, n, m, c, hidden_layers_sizes):
+    def __init__(self, n, c, hidden_layers_sizes):
         """
         creates a standard neural network with len(ns) layers
         :param n: the dimension of the original data, and also number of neurons in the input layer
-        :param m: number of data examples
         :param c: number of classes, and also number of neurons in the output layer
         :param hidden_layers_sizes:
             a list of the hidden layers' sizes, i.e. the number of neurons in each hidden layer: (n_1, n_2, ..., n_l)
         """
         self.n = n
-        self.m = m
         self.c = c
 
         self.hidden_layers_sizes = hidden_layers_sizes
@@ -65,8 +76,6 @@ class Net:
 
         self.layers = self.create_layers()
         self.hidden_layers = self.layers[:-1]
-
-        self.Xs = None
 
     def create_layer(self, w1, w2, b1, b2):
         """
@@ -92,6 +101,63 @@ class Net:
         output_layer = self.create_layer(n, c, 1, c)
         layers.append(output_layer)
         return layers
+
+    def sgd(self, X, y, alpha=0.1, mb_num=0, max_epochs=250, data_set='', plot=True):
+        if not mb_num:
+            mb_num = 1
+
+        results = np.zeros((max_epochs, 2))
+
+        W, b = self.get_output_layer_weights()
+        old_W = np.copy(W)
+
+        for epoch in range(max_epochs):
+
+            mbs, mbs_labels = get_mini_batches(X, y, mb_num)
+
+            for S, yS in zip(mbs, mbs_labels):
+                batch_size = S.shape[1]
+                Xs = self.forward_pass(S)
+                W_grads, b_grads = self.back_prop(Xs, yS)
+
+                W_steps = [- alpha * (1 / batch_size) * W_grad for W_grad in W_grads]
+                b_steps = [- alpha * (1 / batch_size) * b_grad for b_grad in b_grads]
+                self.add_weights_to_layers(W_steps, b_steps)
+
+            Xs = self.forward_pass(X)
+            output_X_tr = Xs[-1]
+
+            W, b = self.get_output_layer_weights()
+
+            loss = compute_loss(output_X_tr, y, W, b)
+            success_rate_tr = get_success_rate(output_X_tr, y, W, b)
+            results[epoch] = loss, success_rate_tr
+
+            if (np.linalg.norm(W - old_W)) < STOP_EPSILON:
+                max_epochs = epoch
+                break
+
+            old_W = np.copy(W)
+
+        if plot:
+            plot_results(results[:, 0], max_epochs,
+                         title='%s F(W)\n#Hidden Layers = %s' % (data_set, self.hidden_layers_num))
+            plot_results(results[:, 1], max_epochs,
+                         title='%s Success Rate\n#Hidden Layers = %s' % (data_set, self.hidden_layers_num))
+
+        final_success_rate = results[max_epochs - 1][1]
+        print('Dataset = %s, Hidden Layers = %s, success_rate = %s' % (data_set, self.hidden_layers_num, final_success_rate))
+
+        return W, b
+
+    def train(self, X, y, alpha=0.1, mb_num=0, max_epochs=250, data_set='', plot=True):
+       self.sgd(X, y, alpha=alpha, mb_num=mb_num, max_epochs=max_epochs, data_set=data_set, plot=plot)
+
+    def predict(self, X, y):
+        X_output = self.forward_pass(X)[-1]
+        W, b = self.get_output_layer_weights()
+        success_rate = get_success_rate(X_output, y, W, b)
+        return success_rate
 
     def forward_pass(self, X):
         """

@@ -4,6 +4,9 @@ from sgd import sgd, nn_sgd
 from std_NN.activation_jacobian_tests import activation_jacobian_tests, activation_transpose_jacobian_tests
 from std_NN.nn_gradient_tests import nn_gradient_tests
 
+from std_NN.net import Net
+from classification_utils import get_success_rate
+
 
 def task1():
     loss_gradient_tests()
@@ -55,8 +58,19 @@ def main():
     # task1()  # loss function gradient tests
     # task3()  # minimizing loss function by SGD
     # task4()  # activation function jacobian tests
-    task6()  # NN gradient tests
-    task7()  # minimizing loss function by SGD with NN
+    # task6()  # NN gradient tests
+    # task7()  # minimizing loss function by SGD with NN
+
+    # loss_gradient_tests()
+    # nn_gradient_tests()
+
+    X_tr, y_tr, X_te, y_te = get_data('GMM')
+    n, m = X_tr.shape
+    c = y_tr.shape[1]
+    nn = Net(n, c, [n+5, n+10])
+    nn.train(X_tr, y_tr, alpha=1.0, mb_num=200, max_epochs=10, data_set='GMM', plot=True)
+    sr = nn.predict(X_te, y_te)
+    print(sr)
 
 
 if __name__ == '__main__':
